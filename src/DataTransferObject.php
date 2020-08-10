@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Spatie\DataTransferObject;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -58,7 +59,8 @@ abstract class DataTransferObject
                 );
             }
 
-            $value = $parameters[$field] ?? $this->{$field} ?? null;
+            $key = $this->getFieldName(new ReflectionProperty(static::class, $field));
+            $value = $parameters[$key] ?? $this->{$field} ?? null;
 
             $value = $this->castValue($valueCaster, $validator, $value);
 
@@ -189,6 +191,14 @@ abstract class DataTransferObject
 
             return $properties;
         });
+    }
+
+    protected function getFieldName(ReflectionProperty $property): string
+    {
+        $reader = new AnnotationReader();
+        $mappedFromAnnotation = $reader->getPropertyAnnotation($property, MappedFrom::class);
+
+        return $mappedFromAnnotation->name ?? $property->getName();
     }
 
     /**
