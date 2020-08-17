@@ -75,7 +75,7 @@ abstract class DataTransferObject
 
             $this->{$field} = $value;
 
-            unset($parameters[$field]);
+            unset($parameters[$key]);
         }
 
         if (! $this->ignoreMissing && count($parameters)) {
