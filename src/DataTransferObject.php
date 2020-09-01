@@ -47,6 +47,9 @@ abstract class DataTransferObject
 
         $valueCaster = $this->getValueCaster();
 
+        /** string[] */
+        $invalidTypes = [];
+
         foreach ($validators as $field => $validator) {
             if (
                 ! isset($parameters[$field])
@@ -65,17 +68,23 @@ abstract class DataTransferObject
             $value = $this->castValue($valueCaster, $validator, $value);
 
             if (! $validator->isValidType($value)) {
-                throw DataTransferObjectError::invalidType(
+                $invalidTypes[] = DataTransferObjectError::invalidTypeMessage(
                     static::class,
                     $field,
                     $validator->allowedTypes,
                     $value
                 );
+
+                continue;
             }
 
             $this->{$field} = $value;
 
             unset($parameters[$key]);
+        }
+
+        if ($invalidTypes) {
+            DataTransferObjectError::invalidTypes($invalidTypes);
         }
 
         if (! $this->ignoreMissing && count($parameters)) {
